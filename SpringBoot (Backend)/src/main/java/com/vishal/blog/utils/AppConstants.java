@@ -13,9 +13,9 @@ public class AppConstants {
 	public static final String DEFAULT_BLOG_IMAGE_PUBLIC_ID = "blogs/tlnvltucd4otycjstajv";
 	public static final String DEFAULT_BLOG_IMAGE_URL = "https://res.cloudinary.com/dzew8rxxw/image/upload/v1732194804/blogs/tlnvltucd4otycjstajv.webp";
 
-	public static final String DEFAULT_USER_IMAGE_PUBLIC_ID = "users/gpwpygjb2pijrcnphmcs";
-	public static final String DEFAULT_USER_IMAGE_URL = "https://res.cloudinary.com/dzew8rxxw/image/upload/v1732194111/users/gpwpygjb2pijrcnphmcs.png";
-	
+	public static final String DEFAULT_USER_IMAGE_PUBLIC_ID = "users/user_image_gggscj";
+	public static final String DEFAULT_USER_IMAGE_URL = "https://res.cloudinary.com/dzew8rxxw/image/upload/v1783176556/blogs/users/user_image_gggscj.png";
+
 	public static final int JWT_TOKEN_EXPIRED = 498;
 	// Custom status code for indicating that the JWT token has expired
 	public static final int JWT_TOKEN_MALFORMED_INFORMATION = 422; 

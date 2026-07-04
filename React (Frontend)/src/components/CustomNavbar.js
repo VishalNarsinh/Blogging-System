@@ -190,9 +190,9 @@ function CustomNavbar() {
                   <Link
                     to={"/post/" + result.pid}
                     className="text-decoration-none"
+                    key={result.pid}
                   >
                     <li
-                      key={result.id}
                       className="list-group-item cursor-pointer"
                       onClick={() => {
                         setSearchQuery(""); // Clear search after navigation

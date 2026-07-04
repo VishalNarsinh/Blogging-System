@@ -18,6 +18,7 @@ import com.cloudinary.Cloudinary;
 import com.vishal.blog.entities.Category;
 import com.vishal.blog.entities.Post;
 import com.vishal.blog.entities.User;
+import com.vishal.blog.exceptions.ApiException;
 import com.vishal.blog.exceptions.ResourceNotFoundException;
 import com.vishal.blog.payloads.PostDto;
 import com.vishal.blog.payloads.PostResponse;
@@ -75,6 +76,9 @@ public class PostServiceImpl implements PostService {
 	@Override
 	public PostDto createPost(PostDto postDto,Integer uId, Integer cId,MultipartFile file) {
 		User user = userRepo.findById(uId).orElseThrow(()->new ResourceNotFoundException("User", "id", uId));
+		if (!user.isLive()) {
+			throw new ApiException("User is deactivated and cannot post or update blogs.");
+		}
 		Category category = categoryRepo.findById(cId).orElseThrow(()->new ResourceNotFoundException("Category", "cId", cId));
 		Post post = dtoToPost(postDto);
 		if(file!=null) {
@@ -143,6 +147,9 @@ public class PostServiceImpl implements PostService {
 	@Override
 	public PostDto updatePost(PostDto postDto, Integer pId,Integer cId, MultipartFile file) {
 		Post post = postRepo.findById(pId).orElseThrow(()->new ResourceNotFoundException("Post", "post id", pId));
+		if (!post.getUser().isLive()) {
+			throw new ApiException("User is deactivated and cannot post or update blogs.");
+		}
 		Category category = categoryRepo.findById(cId).orElseThrow(()->new ResourceNotFoundException("Category", "cId", cId));
 		post.setTitle(postDto.getTitle());
 		post.setContent(postDto.getContent());

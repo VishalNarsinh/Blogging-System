@@ -63,3 +63,15 @@ export const updateBlog = (post, image) => {
     .put(`/posts/${pId}/category/${cId}`, data)
     .then((response) => response.data);
 };
+
+export const getLikeCount = (pid) => {
+  return myAxios.get(`/post/${pid}/likes/count`).then((response) => response.data);
+};
+
+export const checkLike = (pid) => {
+  return privateAxios.post(`/post/check-like/${pid}`).then((response) => response.data);
+};
+
+export const toggleLike = (pid) => {
+  return privateAxios.post(`/post/${pid}`).then((response) => response.data);
+};

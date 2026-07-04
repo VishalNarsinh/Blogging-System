@@ -24,7 +24,7 @@ function AddCategory() {
   const onSubmit = (e) => {
     e.preventDefault();
     if (!category.name.trim()) {
-      toast.error("Title cannot be empty");
+      toast.error("Category name cannot be empty");
       return;
     }
     if (!category.description.trim()) {

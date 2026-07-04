@@ -18,6 +18,11 @@ function Blog({ post, updateUi }) {
   const Swal = require("sweetalert2");
   const userContextData = useContext(UserContext);
 
+  const getImageUrl = (imageMap) => {
+    if (!imageMap || Object.keys(imageMap).length === 0) return "";
+    return imageMap.imageUrl || Object.values(imageMap)[0];
+  };
+
   const [user, setUser] = useState({});
 
   useEffect(() => {
@@ -49,7 +54,7 @@ function Blog({ post, updateUi }) {
             rippleColor="light"
           >
             {/* <img
-              src={post.image[Object.entries(post.image)[0][0]]}
+              src={getImageUrl(post.image)}
               className="img-fluid"
               alt=""
               style={
@@ -60,7 +65,7 @@ function Blog({ post, updateUi }) {
               }
             /> */}
             <img
-              src={post.image[Object.entries(post.image)[0][0]]}
+              src={getImageUrl(post.image)}
               className="img-fluid"
               alt=""
               style={{

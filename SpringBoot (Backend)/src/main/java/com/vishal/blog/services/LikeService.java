@@ -6,4 +6,6 @@ public interface LikeService {
 	boolean isLikedByUser(Integer uId, Integer pId);
 	
 	ApiResponse toggleLike(Integer uId, Integer pId);
+	
+	long getLikeCount(Integer pId);
 }

@@ -59,7 +59,7 @@ function ShowCategory() {
         <MDBRow>
           {categories.length > 0 &&
             categories.map((category) => (
-              <MDBCol sm="12" md="6" lg="4">
+              <MDBCol key={category.cid} sm="12" md="6" lg="4">
                 <MDBCard className="m-5">
                   <MDBCardBody className="px-5">
                     <h1>{category.name}</h1>

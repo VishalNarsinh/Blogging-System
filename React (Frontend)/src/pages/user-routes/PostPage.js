@@ -10,7 +10,7 @@ import {
   MDBRow,
   MDBTextArea,
 } from "mdb-react-ui-kit";
-import { getPostById } from "../../services/post-service";
+import { getPostById, getLikeCount, checkLike, toggleLike } from "../../services/post-service";
 import { getCurrentUser, isLoggedIn } from "../../auth";
 import { creatComment, deleteComment } from "../../services/commet-service";
 import { Card, CardBody } from "reactstrap";
@@ -20,13 +20,21 @@ import UserContext from "./../../context/UserContext";
 const PostPage = () => {
   const userContextData = useContext(UserContext);
 
+  const getImageUrl = (imageMap) => {
+    if (!imageMap || Object.keys(imageMap).length === 0) return "";
+    return imageMap.imageUrl || Object.values(imageMap)[0];
+  };
+
   const { pid } = useParams();
 
   const [post, setPost] = useState({});
-
   const [user, setUser] = useState(getCurrentUser());
-
   const [commentContent, setCommentContent] = useState("");
+
+  const [likeCount, setLikeCount] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [showAnimateHeart, setShowAnimateHeart] = useState(false);
+  const [miniHearts, setMiniHearts] = useState([]);
 
   const onChange = (e) => {
     if (!isLoggedIn()) {
@@ -42,14 +50,94 @@ const PostPage = () => {
       .then((post) => {
         console.log(post);
         setPost(post);
-        console.log();
       })
       .catch((error) => {
         toast.error("No such post exists");
         navigate("/");
         console.log(error);
       });
-  }, []);
+
+    getLikeCount(pid)
+      .then((data) => {
+        setLikeCount(data.count);
+      })
+      .catch((error) => {
+        console.error("Error loading like count", error);
+      });
+
+    if (isLoggedIn()) {
+      checkLike(pid)
+        .then((data) => {
+          setIsLiked(data.success);
+        })
+        .catch((error) => {
+          console.error("Error checking like status", error);
+        });
+    }
+  }, [pid]);
+
+  const handleLikeToggle = () => {
+    if (!isLoggedIn()) {
+      toast.error("Please login to like this post");
+      return;
+    }
+    toggleLike(pid)
+      .then((response) => {
+        if (response.success) {
+          setIsLiked(!isLiked);
+          setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1));
+          toast.success(response.message);
+        }
+      })
+      .catch((error) => {
+        console.error("Error toggling like", error);
+        toast.error("Could not toggle like");
+      });
+  };
+
+  const handleDoubleTap = (e) => {
+    if (!isLoggedIn()) {
+      toast.error("Please login to like this post");
+      return;
+    }
+
+    const newMiniHearts = Array.from({ length: 8 }).map((_, i) => ({
+      id: Date.now() + i + Math.random(),
+      style: {
+        left: `${50 + (Math.random() * 40 - 20)}%`,
+        top: `${50 + (Math.random() * 40 - 20)}%`,
+        "--drift-x": `${Math.random() * 80 - 40}px`,
+        "--rotate-deg": `${Math.random() * 90 - 45}deg`,
+        animationDelay: `${Math.random() * 0.15}s`,
+        animationDuration: `${1 + Math.random() * 0.5}s`,
+      },
+    }));
+
+    setMiniHearts((prev) => [...prev, ...newMiniHearts]);
+
+    setShowAnimateHeart(true);
+    setTimeout(() => {
+      setShowAnimateHeart(false);
+    }, 1000);
+
+    setTimeout(() => {
+      setMiniHearts((prev) => prev.filter((h) => !newMiniHearts.includes(h)));
+    }, 1600);
+
+    if (!isLiked) {
+      toggleLike(pid)
+        .then((response) => {
+          if (response.success) {
+            setIsLiked(true);
+            setLikeCount((prev) => prev + 1);
+            toast.success(response.message);
+          }
+        })
+        .catch((error) => {
+          console.error("Error toggling like on double-tap", error);
+        });
+    }
+  };
 
   const printDate = (date) => {
     return new Date(date).toDateString();
@@ -116,15 +204,40 @@ const PostPage = () => {
                 <div
                   className="d-flex justify-content-center align-items-center mt-2"
                   style={{
-                    maxWidth: "50%",
-                    maxHeight: "50%",
+                    maxWidth: "100%",
                   }}
                 >
-                  <img
-                    src={post?.image[Object.entries(post?.image)[0][0]]}
-                    alt=""
-                    className="img-fluid"
-                  />
+                  <div
+                    className="heart-overlay-container d-flex justify-content-center align-items-center"
+                    onDoubleClick={handleDoubleTap}
+                    style={{
+                      position: "relative",
+                      maxWidth: "50%",
+                      maxHeight: "500px",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <img
+                      src={getImageUrl(post?.image)}
+                      alt=""
+                      className="img-fluid rounded"
+                      style={{ objectFit: "cover", width: "100%" }}
+                    />
+                    <MDBIcon
+                      fas
+                      icon="heart"
+                      className={`floating-heart ${showAnimateHeart ? "animate" : ""}`}
+                    />
+                    {miniHearts.map((heart) => (
+                      <MDBIcon
+                        key={heart.id}
+                        fas
+                        icon="heart"
+                        className="floating-mini-heart"
+                        style={heart.style}
+                      />
+                    ))}
+                  </div>
                 </div>
                 <div className="p-2 m-2">
                   <span
@@ -132,6 +245,27 @@ const PostPage = () => {
                       __html: post?.content,
                     }}
                   />
+                </div>
+
+                {/* Like Button & Count section */}
+                <div className="p-2 mx-2 mb-2 d-flex align-items-center">
+                  <MDBBtn
+                    color="link"
+                    className="p-0 text-decoration-none"
+                    onClick={handleLikeToggle}
+                    style={{ boxShadow: "none" }}
+                  >
+                    <MDBIcon
+                      far={!isLiked}
+                      fas={isLiked}
+                      icon="heart"
+                      className={`fa-2x ${isLiked ? "text-danger" : "text-muted"}`}
+                      style={{ cursor: "pointer", transition: "transform 0.2s" }}
+                    />
+                  </MDBBtn>
+                  <span className="ms-2 fw-bold text-muted" style={{ fontSize: "1.1rem" }}>
+                    {likeCount} {likeCount === 1 ? "Like" : "Likes"}
+                  </span>
                 </div>
               </MDBCard>
             )}
